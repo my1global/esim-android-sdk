@@ -15,7 +15,7 @@ dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
         maven {
-            url = uri("https://maven.pkg.github.com/Truphone/esim-sdk-android-kotlin")
+            url = uri("https://maven.pkg.github.com/Truphone/esim-android-sdk")
 
             credentials {
                 username = "GITHUB_USER" // Your GitHub username

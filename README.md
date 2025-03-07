@@ -5,7 +5,7 @@ in your root folder add our repo as a maven repository
 settings.gradle
 ```gradle
 maven {
-    url "https://maven.pkg.github.com/Truphone/esim-sdk-android-kotlin"
+    url "https://maven.pkg.github.com/Truphone/esim-android-sdk"
 
     credentials {
         username = "GITHUB_USER" // Your GitHub username
@@ -17,7 +17,7 @@ maven {
 settings.gradle.kts
 ```kotlin
 maven {
-        url = uri("https://maven.pkg.github.com/Truphone/esim-sdk-android-kotlin")
+        url = uri("https://maven.pkg.github.com/Truphone/esim-android-sdk")
 
         credentials {
             username = "GITHUB_USER" // Your GitHub username
@@ -32,13 +32,13 @@ In your app folder add the package as a dependency
 
 ```gradle
 dependencies {
-    implementation "com.oneglobal:esim-sdk:0.0.2@aar"
+    implementation "com.oneglobal:esim-sdk:1.0.0@aar"
 }
 ```
 
 ```kotlin
 dependencies {
-    implementation("com.oneglobal:esim-sdk:0.0.2@aar")
+    implementation("com.oneglobal:esim-sdk:1.0.0@aar")
 }
 ```
 
