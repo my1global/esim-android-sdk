@@ -52,7 +52,7 @@ android {
 dependencies {
 
     // add esim sdk
-    implementation("com.oneglobal:esim-sdk:1.0.0@aar")
+    implementation("com.oneglobal:esim-sdk:1.1.0@aar")
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

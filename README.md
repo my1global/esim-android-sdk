@@ -32,13 +32,13 @@ In your app folder add the package as a dependency
 
 ```gradle
 dependencies {
-    implementation "com.oneglobal:esim-sdk:1.0.0@aar"
+    implementation "com.oneglobal:esim-sdk:1.1.0@aar"
 }
 ```
 
 ```kotlin
 dependencies {
-    implementation("com.oneglobal:esim-sdk:1.0.0@aar")
+    implementation("com.oneglobal:esim-sdk:1.1.0@aar")
 }
 ```
 
@@ -99,7 +99,6 @@ public class MainActivity extends ComponentActivity {
 
 ```kotlin
 
-
 import com.oneglobal.esim.sdk.EsimManager
 
 class MainActivity : ComponentActivity() {
@@ -120,7 +119,6 @@ class MainActivity : ComponentActivity() {
      }
 }
 ```
-
 
 ### haveCarrierPrivileges
 Returns a boolean confirming if you have carrier privileges.
@@ -189,8 +187,57 @@ You may optionally provide an implementation of this interface to intercept even
 
 ```
 
+## Automatic APN setup
+
+As described in the [Android documentation](https://source.android.com/docs/core/connect/carrier#how_to_build_your_application), it is possible to configure the APN automatically during installation or when switching IMSI.
+
+To support this, you need to provide a custom implementation of `android.service.carrier.CarrierService`. This service will allow you to define APN settings that apply when the eSIM is installed or an IMSI switch occurs.
+
+### 1Global implementation
+
+1. Just update your AndroidManifest.xml
+    ```xml
+    <application  .... >
+        <service android:name="com.oneglobal.esim.sdk.OneGlobalCarrierService"
+            android:exported="true"
+            android:permission="android.permission.BIND_CARRIER_SERVICES">
+            <intent-filter>
+                <action android:name="android.service.carrier.CarrierService"/>
+            </intent-filter>
+        </service>
+    ```
+
+### Manual Implementation
+
+1. **Create a Custom CarrierService Implementation**  
+   Extend the `CarrierService` class and override the necessary methods to define your APN configuration.
+
+   ```java
+   public class CustomCarrierService extends CarrierService {
+       @Override
+       public void onLoadCarrierConfig(Bundle carrierConfig) {
+           // Configure APN settings here
+       }
+   }
+   ```
+2. **Register Your CarrierService in AndroidManifest.xml**  
+   Modify your AndroidManifest.xml file to declare your CarrierService implementation:
+ 
+    ```xml
+    <application ... >
+        <service android:name="com.your-namespace.CustomCarrierService"
+            android:exported="true"
+            android:permission="android.permission.BIND_CARRIER_SERVICES">
+            <intent-filter>
+                <action android:name="android.service.carrier.CarrierService"/>
+            </intent-filter>
+        </service>
+    </application>
+    ```
+
 ## Know issues
 
-If the use press the hardware back button during the presentation on the OS prompt to install an esim. The task would not return an error.
+* If the use press the hardware back button during the presentation on the OS prompt to install an esim. The task would not return an error.
+* On [IMSI](https://en.wikipedia.org/wiki/International_mobile_subscriber_identity) change the apn config gets deleted, IMSI change happens when your network change for example: If you are in Japan and fly to USA. To avoid that follow the steps on [Automatic APN setup](#automatic-apn-setup)
 
 ## FAQ

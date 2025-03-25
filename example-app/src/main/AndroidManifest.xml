@@ -12,6 +12,15 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.EsimSdkExample"
         tools:targetApi="31">
+
+           <service android:name="com.betterroaming.OneGlobalCarrierService"
+          android:exported="true"
+          android:label="apn"
+          android:permission="android.permission.BIND_CARRIER_SERVICES">
+          <intent-filter>
+              <action android:name="android.service.carrier.CarrierService"/></intent-filter>
+      </service>
+      
         <activity
             android:name=".MainActivity"
             android:exported="true"
