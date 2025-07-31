@@ -1,11 +1,12 @@
 # esim-sdk-android 1Global
 ## Setup maven repository
+### Automatic setup via GitHub Packages
 in your root folder add our repo as a maven repository
 
 settings.gradle
 ```gradle
 maven {
-    url "https://maven.pkg.github.com/Truphone/esim-android-sdk"
+    url "https://maven.pkg.github.com/my1global/esim-android-sdk"
 
     credentials {
         username = "GITHUB_USER" // Your GitHub username
@@ -17,7 +18,7 @@ maven {
 settings.gradle.kts
 ```kotlin
 maven {
-        url = uri("https://maven.pkg.github.com/Truphone/esim-android-sdk")
+        url = uri("https://maven.pkg.github.com/my1global/esim-android-sdk")
 
         credentials {
             username = "GITHUB_USER" // Your GitHub username
@@ -26,19 +27,84 @@ maven {
 }
 ```
 
+### Manual setup
+
+If you don’t want to add the GitHub Packages repository, you can download the AAR directly and include it in your project.
+
+1) Download the artifact
+
+Grab the latest .aar from the package page:
+https://github.com/my1global/esim-android-sdk/packages/2406778
+
+2) Add the AAR to your project
+	1.	In Android Studio, create a folder named libs inside your app module (usually app/libs/).
+	2.	Copy the downloaded esim-android-sdk-<version>.aar into that libs folder.
+	3.	Refresh/Sync Gradle when prompted.
+
+⸻
+
+3) Declare the dependency
+
+You can do this in one of two ways. The simplest is to reference the file directly (no extra repository config needed).
+
+Option A: File reference (recommended)
+
+app/build.gradle (Groovy)
+
+dependencies {
+    implementation(files("libs/esim-android-sdk-<version>.aar"))
+}
+
+app/build.gradle.kts (Kotlin DSL)
+
+dependencies {
+    implementation(files("libs/esim-android-sdk-<version>.aar"))
+}
+
+Option B: flatDir repository
+
+app/build.gradle (Groovy)
+
+repositories {
+    flatDir { dirs 'libs' }
+}
+
+dependencies {
+    implementation(name: "esim-android-sdk-<version>", ext: "aar")
+}
+
+app/build.gradle.kts (Kotlin DSL)
+
+repositories {
+    flatDir { dirs("libs") }
+}
+
+dependencies {
+    implementation(name = "esim-android-sdk-<version>", ext = "aar")
+}
+
+Replace <version> with the actual file’s version name you downloaded.
+
+⸻
+
+4) Sync and import
+
+Sync the project. You can now import and use the SDK classes in your code as usual.
+
+
 ## Add package to your app
 
 In your app folder add the package as a dependency
 
 ```gradle
 dependencies {
-    implementation "com.oneglobal:esim-sdk:1.1.0@aar"
+    implementation "com.oneglobal:esim-sdk:1.1.4@aar"
 }
 ```
 
 ```kotlin
 dependencies {
-    implementation("com.oneglobal:esim-sdk:1.1.0@aar")
+    implementation("com.oneglobal:esim-sdk:1.1.4@aar")
 }
 ```
 
