@@ -41,8 +41,6 @@ https://github.com/my1global/esim-android-sdk/packages/2406778
 	2.	Copy the downloaded esim-android-sdk-<version>.aar into that libs folder.
 	3.	Refresh/Sync Gradle when prompted.
 
-⸻
-
 3) Declare the dependency
 
 You can do this in one of two ways. The simplest is to reference the file directly (no extra repository config needed).
@@ -50,21 +48,21 @@ You can do this in one of two ways. The simplest is to reference the file direct
 Option A: File reference (recommended)
 
 app/build.gradle (Groovy)
-
+```gradle
 dependencies {
     implementation(files("libs/esim-android-sdk-<version>.aar"))
 }
-
+```
 app/build.gradle.kts (Kotlin DSL)
-
+```kotlin
 dependencies {
     implementation(files("libs/esim-android-sdk-<version>.aar"))
 }
-
+```
 Option B: flatDir repository
 
 app/build.gradle (Groovy)
-
+```gradle
 repositories {
     flatDir { dirs 'libs' }
 }
@@ -72,9 +70,9 @@ repositories {
 dependencies {
     implementation(name: "esim-android-sdk-<version>", ext: "aar")
 }
-
+```
 app/build.gradle.kts (Kotlin DSL)
-
+```kotlin
 repositories {
     flatDir { dirs("libs") }
 }
@@ -82,7 +80,7 @@ repositories {
 dependencies {
     implementation(name = "esim-android-sdk-<version>", ext = "aar")
 }
-
+```
 Replace <version> with the actual file’s version name you downloaded.
 
 ⸻
