@@ -1,11 +1,12 @@
 # esim-sdk-android 1Global
 ## Setup maven repository
+### Automatic setup via GitHub Packages
 in your root folder add our repo as a maven repository
 
 settings.gradle
 ```gradle
 maven {
-    url "https://maven.pkg.github.com/Truphone/esim-android-sdk"
+    url "https://maven.pkg.github.com/my1global/esim-android-sdk"
 
     credentials {
         username = "GITHUB_USER" // Your GitHub username
@@ -17,7 +18,7 @@ maven {
 settings.gradle.kts
 ```kotlin
 maven {
-        url = uri("https://maven.pkg.github.com/Truphone/esim-android-sdk")
+        url = uri("https://maven.pkg.github.com/my1global/esim-android-sdk")
 
         credentials {
             username = "GITHUB_USER" // Your GitHub username
@@ -26,21 +27,126 @@ maven {
 }
 ```
 
+### Manual setup
+
+If you don’t want to add the GitHub Packages repository, you can download the AAR directly and include it in your project.
+
+1) Download the artifact
+
+Grab the latest .aar from the package page:
+https://github.com/my1global/esim-android-sdk/packages/2406778
+
+2) Add the AAR to your project
+	1.	In Android Studio, create a folder named libs inside your app module (usually app/libs/).
+	2.	Copy the downloaded esim-android-sdk-<version>.aar into that libs folder.
+	3.	Refresh/Sync Gradle when prompted.
+
+3) Declare the dependency
+
+You can do this in one of two ways. The simplest is to reference the file directly (no extra repository config needed).
+
+Option A: File reference (recommended)
+
+app/build.gradle (Groovy)
+```gradle
+dependencies {
+    implementation(files("libs/esim-android-sdk-<version>.aar"))
+}
+```
+app/build.gradle.kts (Kotlin DSL)
+```kotlin
+dependencies {
+    implementation(files("libs/esim-android-sdk-<version>.aar"))
+}
+```
+Option B: flatDir repository
+
+app/build.gradle (Groovy)
+```gradle
+repositories {
+    flatDir { dirs 'libs' }
+}
+
+dependencies {
+    implementation(name: "esim-android-sdk-<version>", ext: "aar")
+}
+```
+app/build.gradle.kts (Kotlin DSL)
+```kotlin
+repositories {
+    flatDir { dirs("libs") }
+}
+
+dependencies {
+    implementation(name = "esim-android-sdk-<version>", ext = "aar")
+}
+```
+Replace <version> with the actual file’s version name you downloaded.
+
+⸻
+
+4) Sync and import
+
+Sync the project. You can now import and use the SDK classes in your code as usual.
+
+
 ## Add package to your app
 
 In your app folder add the package as a dependency
 
 ```gradle
 dependencies {
-    implementation "com.oneglobal:esim-sdk:1.1.0@aar"
+    implementation "com.oneglobal:esim-sdk:1.1.4@aar"
 }
 ```
 
 ```kotlin
 dependencies {
-    implementation("com.oneglobal:esim-sdk:1.1.0@aar")
+    implementation("com.oneglobal:esim-sdk:1.1.4@aar")
 }
 ```
+
+
+## SDK Configuration
+
+The SDK provides optional configuration parameters that can be set in the consuming application’s `AndroidManifest.xml`.
+  
+**Enable MMS Support**
+
+You can control whether MMS settings should be added to the APN configuration. This configuration may be applied either during **eSIM setup** or through the SDK’s custom carrier service named `com.oneglobal.esim.sdk.OneGlobalCarrierService`.
+
+**Parameter name:**
+
+    com.oneglobal.esim.mmsSupport
+
+**Accepted values:**
+
+-  `"true"` → Enables MMS configuration
+
+-  `"false"` → Disables MMS configuration (default)
+
+If the parameter is omitted or has an invalid value, the SDK defaults to `"false"`. If the SDK encounters an internal exception, it will fall back to `"true"`.
+
+  
+When enabled (`"true"`), the following MMS configuration will be applied to the APN:
+
+    MMSC = http://mmsc.truphone.com:1981/mm1
+    MMSPORT = 1981
+    TYPE = default,supl,dun,mms
+
+**Manifest Example:**
+
+```
+<application ... >
+
+	<meta-data
+
+	android:name="com.oneglobal.esim.mmsSupport"
+
+	android:value="false"  />
+
+</application>
+```  
 
 
 ## App signing
@@ -175,8 +281,8 @@ Returns an array of string with iccids from 1Global. Would throw an exception if
 You may optionally provide an implementation of this interface to intercept events.
 ```kotlin
 
- val esimManager = EsimManager(this) { eventType ->
-            addLog("$eventType")
+ val esimManager = EsimManager(this) { eventType, message  ->
+            addLog("$eventType" + if (message != null) ": $message" else "")
             if (eventType == EsimEventType.SETUP_ESIM_SHOW_PROMPT) {
                 isLoading = true
             }
@@ -185,6 +291,122 @@ You may optionally provide an implementation of this interface to intercept even
             }
         }
 
+```
+
+### Lifecycle Management
+
+**Important:** The `EsimManager` requires proper lifecycle management to avoid issues when using it across multiple activities.
+
+#### Proper Usage Pattern
+
+**Java Example:**
+```java
+public class MainActivity extends ComponentActivity {
+    private EsimManager esimManager;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        // Create the manager but don't start it yet
+        esimManager = new EsimManager(this, (eventType, data -> {
+            // Handle events
+            Log.d("EsimManager", "Event: " + eventType + ", Data: " + data.toString());
+        });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Start the manager when activity becomes active
+        if (!esimManager.isStarted()) {
+            esimManager.start();
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        // Stop the manager when activity becomes inactive
+        if (esimManager.isStarted()) {
+            esimManager.stop();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        // Ensure cleanup when activity is destroyed
+        if (esimManager.isStarted()) {
+            esimManager.stop();
+        }
+    }
+}
+```
+
+**Kotlin Example:**
+```kotlin
+class MainActivity : ComponentActivity() {
+    private lateinit var esimManager: EsimManager
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        // Create the manager but don't start it yet
+        esimManager = EsimManager(this) { eventType, message ->
+            // Handle events
+            Log.d("EsimManager", "Event: $eventType")
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Start the manager when activity becomes active
+        if (!esimManager.isStarted) {
+            esimManager.start()
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        // Stop the manager when activity becomes inactive
+        if (esimManager.isStarted) {
+            esimManager.stop()
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // Ensure cleanup when activity is destroyed
+        if (esimManager.isStarted) {
+            esimManager.stop()
+        }
+    }
+}
+```
+
+#### Lifecycle Methods
+
+- **`start()`**: Registers the `BroadcastReceiver`. Call this in `onResume()` or when you need to start listening for eSIM events.
+- **`stop()`**: Unregisters the `BroadcastReceiver`. Call this in `onPause()` or when you no longer need to listen for events.
+- **`isStarted()`**: Returns `true` if the receiver is currently registered.
+- **`getInstanceId()`**: Returns the unique instance ID for this `EsimManager` instance.
+
+#### When to Register/Unregister
+
+**Register (`start()`) in:**
+- `onResume()` - Most common pattern
+- `onCreate()` - If you need immediate event handling
+- When starting an eSIM operation
+
+**Unregister (`stop()`) in:**
+- `onPause()` - Most common pattern  
+- `onDestroy()` - To ensure cleanup
+- When switching activities
+- When no longer needing eSIM event handling
+
+### Cleanup
+After using the EsimManager object don't forget to call `stop()` to remove registered observers.
+```
+esimManager.stop()
 ```
 
 ## Automatic APN setup
