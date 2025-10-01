@@ -72,6 +72,29 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+    override fun onResume() {
+        super.onResume()
+        // Start the manager when activity becomes active
+        if (!esimManager.isStarted) {
+            esimManager.start()
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        // Stop the manager when activity becomes inactive
+        if (esimManager.isStarted) {
+            esimManager.stop()
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (::esimManager.isInitialized) {
+            esimManager.stop()
+        }
+    }
 }
 
 @Composable
