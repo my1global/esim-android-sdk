@@ -34,6 +34,7 @@ import com.oneglobal.esim.sdk.example.ui.theme.EsimSdkExampleTheme
 class MainActivity : ComponentActivity() {
     private val logsState = mutableStateOf(listOf<String>())
     private var isLoading by mutableStateOf(false)
+    private lateinit var esimManager: EsimManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,12 +45,12 @@ class MainActivity : ComponentActivity() {
             Log.d("EsimManager", message)
         }
 
-        val esimManager = EsimManager(this) { eventType ->
-            addLog("$eventType")
+        esimManager = EsimManager(this) { eventType, message ->
+            addLog("$eventType" + if (message != null) ": $message" else "")
             if (eventType == EsimEventType.SETUP_ESIM_SHOW_PROMPT) {
                 isLoading = true
             }
-            if (eventType == EsimEventType.SETUP_ESIM_SUCCESS || eventType == EsimEventType.SETUP_ESIM_FAILED || eventType == EsimEventType.SETUP_ESIM_CANCELLED) {
+            if (eventType == EsimEventType.SETUP_ESIM_SUCCESS || eventType == EsimEventType.SETUP_ESIM_FAILED ) {
                 isLoading = false
             }
         }
