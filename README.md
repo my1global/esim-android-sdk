@@ -293,6 +293,19 @@ You may optionally provide an implementation of this interface to intercept even
 
 ```
 
+### Retry Installation Flow
+
+Sometimes the eSIM may be installed successfully, but the SDK returns an error. In such cases, it's recommended to implement a retry installation flow that checks if the eSIM is already installed before starting the installation process from the beginning.
+
+**Why this happens:**
+
+- Network interruptions during installation
+- System delays in reporting installation status
+- User interactions that interrupt the SDK's response handling
+
+**Recommended approach:**
+Before retrying the installation, check if the eSIM is already installed by verifying if the ICCID exists in the list of installed eSIMs with the `getIccids` method. Additionally, it is recommended to verify the installation status with the backend. If the eSIM has status `INSTALLED`, treat the installation as successful and continue the flow.
+
 ### Lifecycle Management
 
 **Important:** The `EsimManager` requires proper lifecycle management to avoid issues when using it across multiple activities.
