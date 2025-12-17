@@ -139,7 +139,7 @@ fun MainScreen(
         Spacer(modifier = Modifier.height(8.dp))
         Button(onClick = {
             setLoading(true)
-            val payload = "LPA:1\$rsp-ams.smdp.io\$5-1RP2L-GCUJ0J"
+            val payload = "LPA:1\$rsp.truphone.com\$QRF-BETTERROAMING-PMRDGIR2EARDEIT5"
             val future = esimManager.setupEsim(payload)
             future.thenAccept { result ->
                 val resultInfo = """
