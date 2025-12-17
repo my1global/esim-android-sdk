@@ -1,9 +1,13 @@
 # esim-sdk-android 1Global
+
 ## Setup maven repository
+
 ### Automatic setup via GitHub Packages
+
 in your root folder add our repo as a maven repository
 
 settings.gradle
+
 ```gradle
 maven {
     url "https://maven.pkg.github.com/my1global/esim-android-sdk"
@@ -16,6 +20,7 @@ maven {
 ```
 
 settings.gradle.kts
+
 ```kotlin
 maven {
         url = uri("https://maven.pkg.github.com/my1global/esim-android-sdk")
@@ -31,37 +36,43 @@ maven {
 
 If you don’t want to add the GitHub Packages repository, you can download the AAR directly and include it in your project.
 
-1) Download the artifact
+1. Download the artifact
 
 Grab the latest .aar from the package page:
 https://github.com/my1global/esim-android-sdk/packages/2406778
 
-2) Add the AAR to your project
-	1.	In Android Studio, create a folder named libs inside your app module (usually app/libs/).
-	2.	Copy the downloaded esim-android-sdk-<version>.aar into that libs folder.
-	3.	Refresh/Sync Gradle when prompted.
+2. Add the AAR to your project
 
-3) Declare the dependency
+   1. In Android Studio, create a folder named libs inside your app module (usually app/libs/).
+   2. Copy the downloaded esim-android-sdk-<version>.aar into that libs folder.
+   3. Refresh/Sync Gradle when prompted.
+
+3. Declare the dependency
 
 You can do this in one of two ways. The simplest is to reference the file directly (no extra repository config needed).
 
 Option A: File reference (recommended)
 
 app/build.gradle (Groovy)
+
 ```gradle
 dependencies {
     implementation(files("libs/esim-android-sdk-<version>.aar"))
 }
 ```
+
 app/build.gradle.kts (Kotlin DSL)
+
 ```kotlin
 dependencies {
     implementation(files("libs/esim-android-sdk-<version>.aar"))
 }
 ```
+
 Option B: flatDir repository
 
 app/build.gradle (Groovy)
+
 ```gradle
 repositories {
     flatDir { dirs 'libs' }
@@ -71,7 +82,9 @@ dependencies {
     implementation(name: "esim-android-sdk-<version>", ext: "aar")
 }
 ```
+
 app/build.gradle.kts (Kotlin DSL)
+
 ```kotlin
 repositories {
     flatDir { dirs("libs") }
@@ -81,14 +94,14 @@ dependencies {
     implementation(name = "esim-android-sdk-<version>", ext = "aar")
 }
 ```
+
 Replace <version> with the actual file’s version name you downloaded.
 
 ⸻
 
-4) Sync and import
+4. Sync and import
 
 Sync the project. You can now import and use the SDK classes in your code as usual.
-
 
 ## Add package to your app
 
@@ -106,11 +119,10 @@ dependencies {
 }
 ```
 
-
 ## SDK Configuration
 
 The SDK provides optional configuration parameters that can be set in the consuming application’s `AndroidManifest.xml`.
-  
+
 **Enable MMS Support**
 
 You can control whether MMS settings should be added to the APN configuration. This configuration may be applied either during **eSIM setup** or through the SDK’s custom carrier service named `com.oneglobal.esim.sdk.OneGlobalCarrierService`.
@@ -121,13 +133,12 @@ You can control whether MMS settings should be added to the APN configuration. T
 
 **Accepted values:**
 
--  `"true"` → Enables MMS configuration
+- `"true"` → Enables MMS configuration
 
--  `"false"` → Disables MMS configuration (default)
+- `"false"` → Disables MMS configuration (default)
 
 If the parameter is omitted or has an invalid value, the SDK defaults to `"false"`. If the SDK encounters an internal exception, it will fall back to `"true"`.
 
-  
 When enabled (`"true"`), the following MMS configuration will be applied to the APN:
 
     MMSC = http://mmsc.truphone.com:1981/mm1
@@ -146,12 +157,11 @@ When enabled (`"true"`), the following MMS configuration will be applied to the 
 	android:value="false"  />
 
 </application>
-```  
-
+```
 
 ## App signing
 
-It is required that the app signing match with the esim profile in order to be able to use the esim installation or any carrier privileges. 
+It is required that the app signing match with the esim profile in order to be able to use the esim installation or any carrier privileges.
 
 ⚠️Your app signing SHA-1 should match the esim profile signing.⚠️
 
@@ -160,7 +170,8 @@ For example
 ```bash
 keytool -list -v -keystore your-keystore.jks -alias your-alias
 ```
-Your otuput should be similar to: 
+
+Your otuput should be similar to:
 
 ```
 Certificate fingerprints:
@@ -173,7 +184,6 @@ if the app bundle id was include on the esim profile it will restrict apps with 
 ## Usage
 
 In order to initiate the class do as follow
-
 
 ```java
 import android.os.Bundle;
@@ -221,39 +231,74 @@ class MainActivity : ComponentActivity() {
         }
 
         val esimManager = EsimManager(this, null)
-     
+
      }
 }
 ```
 
 ### haveCarrierPrivileges
+
 Returns a boolean confirming if you have carrier privileges.
+
 ```kotlin
 val privileges = esimManager.haveCarrierPrivileges()
 ```
 
 ### isEsimSupported
+
 Returns a boolean that represents if the device support esim.
+
 ```kotlin
 val esimSupport = esimManager.isEsimSupported()
 ```
+
 ### setupEsim
-Returns a CompletableFuture<Boolean> that will return a boolean if it was able to install the esim. It will emit events with more information on why it fail when it fails.
+
+Returns a `CompletableFuture<EsimSetupResult>` that contains detailed information about the eSIM installation result. The result includes status, error codes, and whether the eSIM was already installed. It will emit events with more information on why it fails when it fails.
+
+**EsimSetupResult fields:**
+
+- `status`: `SUCCESS` or `ERROR` (enum)
+- `resultCode`: Result code from EuiccManager
+- `detailedCode`: Detailed error code (if error occurred)
+- `operationCode`: Operation code (Android R+, nullable)
+- `isAlreadyInstalled`: `true` if eSIM was already installed on device
+- `installationEndMs`: Timestamp when installation ended (milliseconds)
+- `message`: Error message (nullable)
 
 ```kotlin
-val payload = "LPA:1\$rsp.truphone.com\$QRF-BETTERROAMING-PMRDGIR2EARDEIT5"
-val future = esimManager.setupEsim(payload)
-   future.thenAccept {
-                Toast.makeText(context, "Esim setup: $it", Toast.LENGTH_SHORT).show()
-            }.exceptionally {
-                Toast.makeText(context, "Error: ${it.message}", Toast.LENGTH_LONG).show()
-                null
-            }.thenRun {
-                setLoading(false)
-            }
+    import com.oneglobal.esim.sdk.EsimSetupResult
+
+    val payload = "LPA:1\$rsp.truphone.com\$QRF-BETTERROAMING-PMRDGIR2EARDEIT5"
+    val future = esimManager.setupEsim(payload)
+    future.thenAccept { result ->
+        if (result.status == EsimSetupResult.Status.SUCCESS) {
+            Toast.makeText(context, "eSIM installed successfully", Toast.LENGTH_SHORT).show()
+        } else {
+            val errorInfo = """
+                |eSIM installation failed:
+                |  Status: ${result.status}
+                |  Result Code: ${result.resultCode}
+                |  Detailed Code: ${result.detailedCode}
+                |  Operation Code: ${result.operationCode}
+                |  Already Installed: ${result.isAlreadyInstalled}
+                |  Message: ${result.message ?: "No message"}
+            """.trimMargin()
+            Log.e("EsimManager", errorInfo)
+            Toast.makeText(context, "eSIM setup failed: ${result.message}", Toast.LENGTH_LONG).show()
+        }
+    }.exceptionally { throwable ->
+        Toast.makeText(context, "Error: ${throwable.message}", Toast.LENGTH_LONG).show()
+        null
+    }.thenRun {
+        setLoading(false)
+    }
 ```
+
 ### setAPN
+
 This will set APN in the device. It will throw an exception if you don't have carrier privileges.
+
 ```kotlin
 
 import com.oneglobal.esim.sdk.TitleAPN
@@ -262,12 +307,15 @@ import com.oneglobal.esim.sdk.TitleAPN
      val success = esimManager.setAPN(TitleAPN.ONE_GLOBAL)
     Toast.makeText(context, "Esim APN fix: $success", Toast.LENGTH_SHORT).show()
     } catch (e: Exception) {
-        Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_LONG).show()    
+        Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_LONG).show()
     }
 
 ```
+
 ### getIccids
+
 Returns an array of string with iccids from 1Global. Would throw an exception if you dont have carrier privileges
+
 ```kotlin
    try {
                 val iccids = esimManager.iccids
@@ -278,19 +326,19 @@ Returns an array of string with iccids from 1Global. Would throw an exception if
 ```
 
 ### Event listener
+
 You may optionally provide an implementation of this interface to intercept events.
+
 ```kotlin
-
- val esimManager = EsimManager(this) { eventType, message  ->
-            addLog("$eventType" + if (message != null) ": $message" else "")
-            if (eventType == EsimEventType.SETUP_ESIM_SHOW_PROMPT) {
-                isLoading = true
-            }
-            if (eventType == EsimEventType.SETUP_ESIM_SUCCESS || eventType == EsimEventType.SETUP_ESIM_FAILED || eventType == EsimEventType.SETUP_ESIM_CANCELLED) {
-                isLoading = false
-            }
-        }
-
+val esimManager = EsimManager(this) { eventType ->
+    addLog("$eventType")
+    if (eventType == EsimEventType.SETUP_ESIM_SHOW_PROMPT) {
+        isLoading = true
+    }
+    if (eventType == EsimEventType.SETUP_ESIM_SUCCESS || eventType == EsimEventType.SETUP_ESIM_FAILED || eventType == EsimEventType.SETUP_ESIM_CANCELLED) {
+        isLoading = false
+    }
+}
 ```
 
 ### Retry Installation Flow
@@ -313,6 +361,7 @@ Before retrying the installation, check if the eSIM is already installed by veri
 #### Proper Usage Pattern
 
 **Java Example:**
+
 ```java
 public class MainActivity extends ComponentActivity {
     private EsimManager esimManager;
@@ -321,9 +370,9 @@ public class MainActivity extends ComponentActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         // Create the manager but don't start it yet
-        esimManager = new EsimManager(this, (eventType, data -> {
+        esimManager = new EsimManager(this, (eventType-> {
             // Handle events
-            Log.d("EsimManager", "Event: " + eventType + ", Data: " + data.toString());
+            Log.d("EsimManager", "Event: " + eventType);
         });
     }
 
@@ -357,6 +406,7 @@ public class MainActivity extends ComponentActivity {
 ```
 
 **Kotlin Example:**
+
 ```kotlin
 class MainActivity : ComponentActivity() {
     private lateinit var esimManager: EsimManager
@@ -364,7 +414,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // Create the manager but don't start it yet
-        esimManager = EsimManager(this) { eventType, message ->
+        esimManager = EsimManager(this) { eventType ->
             // Handle events
             Log.d("EsimManager", "Event: $eventType")
         }
@@ -406,18 +456,22 @@ class MainActivity : ComponentActivity() {
 #### When to Register/Unregister
 
 **Register (`start()`) in:**
+
 - `onResume()` - Most common pattern
 - `onCreate()` - If you need immediate event handling
 - When starting an eSIM operation
 
 **Unregister (`stop()`) in:**
-- `onPause()` - Most common pattern  
+
+- `onPause()` - Most common pattern
 - `onDestroy()` - To ensure cleanup
 - When switching activities
 - When no longer needing eSIM event handling
 
 ### Cleanup
+
 After using the EsimManager object don't forget to call `stop()` to remove registered observers.
+
 ```
 esimManager.stop()
 ```
@@ -431,16 +485,16 @@ To support this, you need to provide a custom implementation of `android.service
 ### 1Global implementation
 
 1. Just update your AndroidManifest.xml
-    ```xml
-    <application  .... >
-        <service android:name="com.oneglobal.esim.sdk.OneGlobalCarrierService"
-            android:exported="true"
-            android:permission="android.permission.BIND_CARRIER_SERVICES">
-            <intent-filter>
-                <action android:name="android.service.carrier.CarrierService"/>
-            </intent-filter>
-        </service>
-    ```
+   ```xml
+   <application  .... >
+       <service android:name="com.oneglobal.esim.sdk.OneGlobalCarrierService"
+           android:exported="true"
+           android:permission="android.permission.BIND_CARRIER_SERVICES">
+           <intent-filter>
+               <action android:name="android.service.carrier.CarrierService"/>
+           </intent-filter>
+       </service>
+   ```
 
 ### Manual Implementation
 
@@ -455,24 +509,25 @@ To support this, you need to provide a custom implementation of `android.service
        }
    }
    ```
+
 2. **Register Your CarrierService in AndroidManifest.xml**  
    Modify your AndroidManifest.xml file to declare your CarrierService implementation:
- 
-    ```xml
-    <application ... >
-        <service android:name="com.your-namespace.CustomCarrierService"
-            android:exported="true"
-            android:permission="android.permission.BIND_CARRIER_SERVICES">
-            <intent-filter>
-                <action android:name="android.service.carrier.CarrierService"/>
-            </intent-filter>
-        </service>
-    </application>
-    ```
+
+   ```xml
+   <application ... >
+       <service android:name="com.your-namespace.CustomCarrierService"
+           android:exported="true"
+           android:permission="android.permission.BIND_CARRIER_SERVICES">
+           <intent-filter>
+               <action android:name="android.service.carrier.CarrierService"/>
+           </intent-filter>
+       </service>
+   </application>
+   ```
 
 ## Know issues
 
-* If the use press the hardware back button during the presentation on the OS prompt to install an esim. The task would not return an error.
-* On [IMSI](https://en.wikipedia.org/wiki/International_mobile_subscriber_identity) change the apn config gets deleted, IMSI change happens when your network change for example: If you are in Japan and fly to USA. To avoid that follow the steps on [Automatic APN setup](#automatic-apn-setup)
+- If the use press the hardware back button during the presentation on the OS prompt to install an esim. The task would not return an error.
+- On [IMSI](https://en.wikipedia.org/wiki/International_mobile_subscriber_identity) change the apn config gets deleted, IMSI change happens when your network change for example: If you are in Japan and fly to USA. To avoid that follow the steps on [Automatic APN setup](#automatic-apn-setup)
 
 ## FAQ
