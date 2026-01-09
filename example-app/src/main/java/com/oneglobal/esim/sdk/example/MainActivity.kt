@@ -27,6 +27,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.oneglobal.esim.sdk.EsimEventType
 import com.oneglobal.esim.sdk.EsimManager
+import com.oneglobal.esim.sdk.EsimSetupResult
 import com.oneglobal.esim.sdk.TitleAPN
 import com.oneglobal.esim.sdk.example.ui.theme.EsimSdkExampleTheme
 
@@ -45,8 +46,8 @@ class MainActivity : ComponentActivity() {
             Log.d("EsimManager", message)
         }
 
-        esimManager = EsimManager(this) { eventType, message ->
-            addLog("$eventType" + if (message != null) ": $message" else "")
+        esimManager = EsimManager(this) { eventType ->
+            addLog("$eventType")
             if (eventType == EsimEventType.SETUP_ESIM_SHOW_PROMPT) {
                 isLoading = true
             }
@@ -66,6 +67,7 @@ class MainActivity : ComponentActivity() {
                         isLoading = isLoading,
                         setLoading = { isLoading = it },
                         clearLogs = { logsState.value = emptyList() },
+                        addLog = { message -> addLog(message) },
                         Modifier.padding(innerPadding)
                     )
                 }
@@ -105,6 +107,7 @@ fun MainScreen(
     isLoading: Boolean,
     setLoading: (Boolean) -> Unit,
     clearLogs: () -> Unit,
+    addLog: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -138,8 +141,19 @@ fun MainScreen(
             setLoading(true)
             val payload = "LPA:1\$rsp.truphone.com\$QRF-BETTERROAMING-PMRDGIR2EARDEIT5"
             val future = esimManager.setupEsim(payload)
-            future.thenAccept {
-                Toast.makeText(context, "Esim setup: $it", Toast.LENGTH_SHORT).show()
+            future.thenAccept { result ->
+                val resultInfo = """
+                    |setupEsim result:
+                    |  Status: ${result.status}
+                    |  Result Code: ${result.resultCode}
+                    |  Detailed Code: ${result.detailedCode}
+                    |  Operation Code: ${result.operationCode}
+                    |  Is Already Installed: ${result.isAlreadyInstalled}
+                    |  Installation End Ms: ${result.installationEndMs}
+                    |  Message: ${result.message ?: "null"}
+                """.trimMargin()
+                addLog(resultInfo)
+                Toast.makeText(context, "Esim setup: ${result.status}", Toast.LENGTH_SHORT).show()
             }.exceptionally {
                 Toast.makeText(context, "Error: ${it.message}", Toast.LENGTH_LONG).show()
                 null
