@@ -17,7 +17,7 @@
           android:exported="true"
           android:label="apn"
           android:permission="android.permission.BIND_CARRIER_SERVICES"
-          android:process=":carrier_service">
+          android:process=":one_global_carrier_service">
           <intent-filter>
               <action android:name="android.service.carrier.CarrierService"/></intent-filter>
       </service>

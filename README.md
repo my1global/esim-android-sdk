@@ -42,7 +42,6 @@ Grab the latest .aar from the package page:
 https://github.com/my1global/esim-android-sdk/packages/2406778
 
 2. Add the AAR to your project
-
    1. In Android Studio, create a folder named libs inside your app module (usually app/libs/).
    2. Copy the downloaded esim-android-sdk-<version>.aar into that libs folder.
    3. Refresh/Sync Gradle when prompted.
@@ -490,7 +489,7 @@ To support this, you need to provide a custom implementation of `android.service
        <service android:name="com.oneglobal.esim.sdk.OneGlobalCarrierService"
            android:exported="true"
            android:permission="android.permission.BIND_CARRIER_SERVICES"
-           android:process=":carrier_service">
+           android:process=":one_global_carrier_service">
            <intent-filter>
                <action android:name="android.service.carrier.CarrierService"/>
            </intent-filter>
@@ -505,7 +504,7 @@ To support this, you need to provide a custom implementation of `android.service
    ```java
    public class CustomCarrierService extends CarrierService {
        @Override
-       public void onLoadCarrierConfig(Bundle carrierConfig) {
+       public void onLoadConfig(Bundle carrierConfig) {
            // Configure APN settings here
        }
    }
