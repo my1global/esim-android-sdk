@@ -16,7 +16,8 @@
            <service android:name="com.betterroaming.OneGlobalCarrierService"
           android:exported="true"
           android:label="apn"
-          android:permission="android.permission.BIND_CARRIER_SERVICES">
+          android:permission="android.permission.BIND_CARRIER_SERVICES"
+          android:process=":carrier_service">
           <intent-filter>
               <action android:name="android.service.carrier.CarrierService"/></intent-filter>
       </service>

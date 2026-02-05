@@ -489,7 +489,8 @@ To support this, you need to provide a custom implementation of `android.service
    <application  .... >
        <service android:name="com.oneglobal.esim.sdk.OneGlobalCarrierService"
            android:exported="true"
-           android:permission="android.permission.BIND_CARRIER_SERVICES">
+           android:permission="android.permission.BIND_CARRIER_SERVICES"
+           android:process=":carrier_service">
            <intent-filter>
                <action android:name="android.service.carrier.CarrierService"/>
            </intent-filter>
