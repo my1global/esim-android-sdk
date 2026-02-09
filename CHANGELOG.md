@@ -1,4 +1,4 @@
-## esim-android-sdk-3.0.1.aar - 2026-02-09
+## esim-android-sdk-3.1.0.aar - 2026-02-09
 
 ### Changed
 - AndroidManifest update: added dedicated process for `OneGlobalCarrierService`.
