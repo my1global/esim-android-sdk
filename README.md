@@ -532,3 +532,9 @@ To support this, you need to provide a custom implementation of `android.service
 - On [IMSI](https://en.wikipedia.org/wiki/International_mobile_subscriber_identity) change the apn config gets deleted, IMSI change happens when your network change for example: If you are in Japan and fly to USA. To avoid that follow the steps on [Automatic APN setup](#automatic-apn-setup)
 
 ## FAQ
+
+Validate app signing
+```
+apksigner verify --print-certs app.apk
+```
+
